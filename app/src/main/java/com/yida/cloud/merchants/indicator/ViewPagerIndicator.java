@@ -78,9 +78,17 @@ public class ViewPagerIndicator extends View {
      */
     private List<Float> mTitleTextSize = new ArrayList<>();
     /**
-     * 所有字体的X坐标
+     * 原始所有最大字体的X坐标
      */
-    private List<Integer> mTextXs = new ArrayList<>();
+    private List<Integer> mOriginalMaxTextXs = new ArrayList<>();
+    /**
+     * 最大标题和最小标题之间的差值
+     */
+    private List<Integer> mOriginalMixTextXs = new ArrayList<>();
+    /**
+     * 现在用到的字体X坐标
+     */
+    private List<Integer> mNowTextXs = new ArrayList<>();
 
 
     public ViewPagerIndicator(Context context) {
@@ -127,48 +135,65 @@ public class ViewPagerIndicator extends View {
             @Override
             public void onPageScrolled(int position, float positionOffset,
                                        int positionOffsetPixels) {
-                mCurrentPosition = position;
-                //计算最大文字大小和最小文字大小的比例值
-                float mTitleTextSizeProportion = mTitleTextSizeCult * positionOffset;
-                // ⑤ 恢复默认初始值字体大小
-                int titleTextSize = mTitleTextSize.size();
-                mTitleTextSize.clear();
-                for (int i = 0; i < titleTextSize; i++) {
+//                mCurrentPosition = position;
+//                //计算最大文字大小和最小文字大小的比例值
+//                float mTitleTextSizeProportion = mTitleTextSizeCult * positionOffset;
+//                // ⑤ 恢复默认初始值字体大小
+//                int titleTextSize = mTitleTextSize.size();
+//                mTitleTextSize.clear();
+//                for (int i = 0; i < titleTextSize; i++) {
+//                    //默认字体大小
+//                    mTitleTextSize.add(mMixTextSize);
+//                }
+//                //恢复默认的标题间距
+//                mNowTextXs.clear();
+//                mNowTextXs.addAll(mOriginalMaxTextXs);
 //
-                    //默认字体大小
-                    mTitleTextSize.add(mMixTextSize);
-                }
-                // 判断ViewPager的滑动方向
-                if (mLastPositionOffset >= positionOffset && positionOffset != 0) {
-                    //---------------------------计算字体大小-------
-                    //右滑  这样滑动的  <<<<<-----
-                    if (position >= 0 && positionOffset <= 1.0f) {
-                        // 当前这个不断的缩小
-                        mTitleTextSize.add(position, mMaxTextSize - mTitleTextSizeProportion);
-                        // 上一个不断的增大
-                        mTitleTextSize.add(position + 1, mMixTextSize + mTitleTextSizeProportion);
-                    }
-                    //---------------------------计算字体大小-------
-
-                } else if (mLastPositionOffset <= positionOffset && positionOffset != 0) {
-                    //左滑  这样滑动的 ---->>>>
-                    //没有大于边界
-                    if (position < mViewPager.getChildCount() && positionOffset <= 1.0f) {
-                        // 当前这个不断的缩小
-                        mTitleTextSize.add(position, mMaxTextSize - mTitleTextSizeProportion);
-                        //下一个不断的增大
-                        mTitleTextSize.add(position + 1, mMixTextSize + mTitleTextSizeProportion);
-
-                    }
-                } else {
-                    //回滚回去了，默认大标题
-                    mTitleTextSize.add(position, mMaxTextSize);
-                }
-
-                mLastPositionOffset = positionOffset;
-
-                //重新绘制
-                postInvalidate();
+//
+//                // 判断ViewPager的滑动方向
+//                if (mLastPositionOffset >= positionOffset && positionOffset != 0) {
+//                    //右滑  这样滑动的  <<<<<-----
+//                    if (position >= 0 && positionOffset <= 1.0f) {
+//                        //---------------------------计算字体大小 start-------
+//                        // 当前这个不断的缩小
+//                        mTitleTextSize.add(position, mMaxTextSize - mTitleTextSizeProportion);
+//                        // 当前这个不断的缩小
+//                        mTitleTextSize.add(position + 1, mMixTextSize + mTitleTextSizeProportion);
+//                        //---------------------------计算字体大小end-------
+//                    }
+//
+//                } else if (mLastPositionOffset <= positionOffset && positionOffset != 0) {
+//                    //左滑  这样滑动的 ---->>>>
+//                    //没有大于边界
+//                    if (position < mViewPager.getChildCount() && positionOffset <= 1.0f) {
+//                        //---------------------------计算字体大小 start-------
+//                        // 当前这个不断的缩小
+//                        mTitleTextSize.add(position, mMaxTextSize - mTitleTextSizeProportion);
+//                        //当前这个不断的缩小
+//                        mTitleTextSize.add(position + 1, mMixTextSize + mTitleTextSizeProportion);
+//                        //---------------------------计算字体大小end-------
+//
+//                        //---------------------------计算间距start-------
+//                        // 获取当前标题的X坐标
+//                        // 下一个的X坐标
+//                        Integer mNextTitleX = mNowTextXs.get(position + 1);
+//                        // 计算两个坐标之间的差值
+//                        float v = (mNextTitleX - mOriginalMixTextXs.get(position + 1)) * positionOffset;
+////                        mNowTextXs.add(position + 1, (int) v);
+//                         mNowTextXs.add(position + 1, (int) (mNextTitleX - (v * positionOffset)));
+//                        //---------------------------计算间距end---------
+//
+//
+//                    }
+//                } else {
+//                    //回滚回去了，默认大标题
+//                    mTitleTextSize.add(position, mMaxTextSize);
+//                }
+//
+//                mLastPositionOffset = positionOffset;
+//
+//                //重新绘制
+//                postInvalidate();
 
             }
 
@@ -203,9 +228,9 @@ public class ViewPagerIndicator extends View {
         for (int i = 0; i < titleSize; i++) {
             sumTtilewidth += measureTextWidth(mTitles.get(i), mPaint);
             //是否加上间隙 最后一个不加上间隙
-            if (i < titleSize) {
-                sumTtilewidth += mTitleSpaces;
-            }
+//            if (i < titleSize) {
+//                sumTtilewidth += mTitleSpaces;
+//            }
             //将字体大小存放到集合中
             if (i == mCurrentPosition) {
                 mTitleTextSize.add(mMaxTextSize);
@@ -261,46 +286,12 @@ public class ViewPagerIndicator extends View {
         for (int i = 0; i < titleSize; i++) {
             //取出文字大小
             Float textSize = mTitleTextSize.get(i);
-//            Log.e(TAG, "textSize: " + textSize + "     index:" + i);
             mPaint.setTextSize(textSize);
             //绘制文字
             String title = mTitles.get(i);
             //绘制文字
-            canvas.drawText(title, mTextXs.get(i), mHeight - 10, mPaint);
-
+            canvas.drawText(title, mNowTextXs.get(i), mHeight - 10, mPaint);
         }
-    }
-
-
-    /**
-     * ② 绘制标题文字
-     *
-     * @param canvas
-     */
-    /*private void drawText1(Canvas canvas) {
-        // ② 绘制标题文字
-
-        int titleSize = mTitles.size();
-        int textX = mStartX;
-        //
-        for (int i = 0; i < titleSize; i++) {
-            //下标，设置文字大小
-            if (i == mCurrentPosition) {
-                mPaint.setTextSize(mMaxTextSize);
-            } else {
-                mPaint.setTextSize(mMixTextSize);
-            }
-            //绘制文字
-            String title = mTitles.get(i);
-            canvas.drawText(title, textX, mHeight - 10, mPaint);
-            //文字下标
-            //初始X坐标 加上 上个文字的宽度 加上 间距
-            textX += measureTextWidth(title, mPaint) + mSpaces;
-        }
-    }*/
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
 
@@ -322,22 +313,46 @@ public class ViewPagerIndicator extends View {
      */
     private void calculationTextX() {
         int titleSize = mTitles.size();
-        int textX = mStartX;
+        //最大字体X轴
+        int maxTextX = mStartX;
 
+        mOriginalMaxTextXs.clear();
+        mOriginalMixTextXs.clear();
         for (int i = 0; i < titleSize; i++) {
-            mTextXs.add(textX);
-
-            if (mCurrentPosition == i)
-                mPaint.setTextSize(mMaxTextSize);
-            else
-                mPaint.setTextSize(mMixTextSize);
-
+            //添加到最大字体
+            mOriginalMaxTextXs.add(maxTextX);
+            //todo 应该增加一个差值
+            // 最大值 与最小值的差值
+//            if (mCurrentPosition == i) {
+//                mPaint.setTextSize(mMaxTextSize);
+//            } else {
+            mPaint.setTextSize(mMixTextSize);
+//            }
             //取出文字
             String title = mTitles.get(i);
 
             //初始X坐标 加上 上个文字的宽度 加上 间距
-            textX += measureTextWidth(title, mPaint) + mSpaces;
+            int maxTitleWidth = measureTextWidth(title, mPaint);
+            //最小X坐标值
+            mPaint.setTextSize(mMixTextSize);
+            int mixTitleWidth = measureTextWidth(title, mPaint);
+
+            //最大标题和最小标题之间的差值
+            int titleWidthDifference = maxTitleWidth - mixTitleWidth;
+            mOriginalMixTextXs.add(titleWidthDifference);
+
+
+            maxTextX += maxTitleWidth + mTitleSpaces;
+            if (i > mCurrentPosition) {
+                maxTextX += titleWidthDifference;
+                Log.e(TAG, "增加: "+titleWidthDifference );
+//                mOriginalMaxTextXs.add(0, maxTextX);
+            }
+
         }
+
+        mNowTextXs.clear();
+        mNowTextXs.addAll(mOriginalMaxTextXs);
     }
 
 
