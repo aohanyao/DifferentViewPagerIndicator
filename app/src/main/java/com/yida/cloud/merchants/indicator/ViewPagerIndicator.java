@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -62,7 +63,10 @@ public class ViewPagerIndicator extends View {
     private int mHeight = 0;
     private int mStartX = 0;
     private int mCurrentPosition = 0;
-
+    /**
+     * path构成一个三角形
+     */
+    private Path mPath;
     private ViewPager mViewPager;
     /**
      * 最后一次偏移
@@ -105,6 +109,7 @@ public class ViewPagerIndicator extends View {
         this.mTitles = mTitles;
 //        calculationProperty();
     }
+
 
     public ViewPager getViewPager() {
         return mViewPager;
@@ -247,6 +252,22 @@ public class ViewPagerIndicator extends View {
         mTitleTextSizeCult = (mMaxTextSize - mMixTextSize);
         setFocusable(true);
         setClickable(true);
+
+        initTriangle();
+    }
+
+    /**
+     * 初始化三角形指示器
+     */
+    private void initTriangle() {
+        mPath = new Path();
+
+        int mTriangleHeight = DensityUtils.dp2px(getContext(), 8);
+        int mTriangleWidth = DensityUtils.dp2px(getContext(), 8);
+        mPath.moveTo(0, 0);
+        mPath.lineTo(mTriangleWidth, 0);
+        mPath.lineTo(mTriangleWidth / 2, -mTriangleHeight);
+        mPath.close();
     }
 
 
