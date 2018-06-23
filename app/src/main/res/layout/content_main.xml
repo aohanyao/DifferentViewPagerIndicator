@@ -13,13 +13,15 @@
     <com.yida.cloud.merchants.indicator.ViewPagerIndicator
         android:id="@+id/vi1"
         android:layout_width="match_parent"
-        android:layout_height="100dp" />
+        android:layout_height="100dp"
+        android:background="#03a5fa" />
 
     <com.yida.cloud.merchants.DifferentViewPagerIndicator
         android:id="@+id/tlHome"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:background="@color/colorPrimary"
+        android:visibility="gone"
         app:tabIndicatorCount="3"
         app:tabIndicatorHeight="2.5dp"
         app:tabIndicatorTextSize="16sp"

@@ -9,8 +9,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
+import com.yida.cloud.merchants.indicator.bean.IndicatorBean;
 import com.yida.cloud.merchants.utils.DensityUtils;
 
 import java.util.ArrayList;
@@ -66,7 +68,6 @@ public class ViewPagerIndicator extends View {
      * 最后一次偏移
      */
     float mLastPositionOffset = 0L;
-//    float mPositionOffset = 0L;
 
     /**
      * 最大字体与最小字体的差值
@@ -74,22 +75,14 @@ public class ViewPagerIndicator extends View {
     private float mTitleTextSizeCult;
 
     /**
-     * 所有的字体大小
+     * 所有的指示器
      */
-    private List<Float> mTitleTextSize = new ArrayList<>();
-    /**
-     * 原始所有最大字体的X坐标
-     */
-    private List<Integer> mOriginalMaxTextXs = new ArrayList<>();
-    /**
-     * 最大标题和最小标题之间的差值
-     */
-    private List<Integer> mOriginalMixTextXs = new ArrayList<>();
-    /**
-     * 现在用到的字体X坐标
-     */
-    private List<Integer> mNowTextXs = new ArrayList<>();
+    private List<IndicatorBean> mIndicatorBeans = new ArrayList<>();
 
+    // 1. 获取点击的X坐标
+    private float mDownX = 0;
+    // 2. 获取点击的Y坐标
+    private float mDownY = 0;
 
     public ViewPagerIndicator(Context context) {
         this(context, null);
@@ -104,7 +97,7 @@ public class ViewPagerIndicator extends View {
         init(context, attrs, defStyleAttr);
     }
 
-    public List<String> getmTitles() {
+    public List<String> getTitles() {
         return mTitles;
     }
 
@@ -120,13 +113,15 @@ public class ViewPagerIndicator extends View {
     public void setViewPager(ViewPager viewPager, int pos) {
         this.mViewPager = viewPager;
 //        mCurrentPosition = pos;
-        setViewPagerListener();
+        setViewPagerListener(pos);
     }
 
     /**
      * ③ 监听viewPager
+     *
+     * @param pos
      */
-    private void setViewPagerListener() {
+    private void setViewPagerListener(int pos) {
         mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -135,74 +130,61 @@ public class ViewPagerIndicator extends View {
             @Override
             public void onPageScrolled(int position, float positionOffset,
                                        int positionOffsetPixels) {
-//                mCurrentPosition = position;
-//                //计算最大文字大小和最小文字大小的比例值
-//                float mTitleTextSizeProportion = mTitleTextSizeCult * positionOffset;
-//                // ⑤ 恢复默认初始值字体大小
-//                int titleTextSize = mTitleTextSize.size();
-//                mTitleTextSize.clear();
-//                for (int i = 0; i < titleTextSize; i++) {
-//                    //默认字体大小
-//                    mTitleTextSize.add(mMixTextSize);
-//                }
-//                //恢复默认的标题间距
-//                mNowTextXs.clear();
-//                mNowTextXs.addAll(mOriginalMaxTextXs);
-//
-//
-//                // 判断ViewPager的滑动方向
-//                if (mLastPositionOffset >= positionOffset && positionOffset != 0) {
-//                    //右滑  这样滑动的  <<<<<-----
-//                    if (position >= 0 && positionOffset <= 1.0f) {
-//                        //---------------------------计算字体大小 start-------
-//                        // 当前这个不断的缩小
-//                        mTitleTextSize.add(position, mMaxTextSize - mTitleTextSizeProportion);
-//                        // 当前这个不断的缩小
-//                        mTitleTextSize.add(position + 1, mMixTextSize + mTitleTextSizeProportion);
-//                        //---------------------------计算字体大小end-------
-//                    }
-//
-//                } else if (mLastPositionOffset <= positionOffset && positionOffset != 0) {
-//                    //左滑  这样滑动的 ---->>>>
-//                    //没有大于边界
-//                    if (position < mViewPager.getChildCount() && positionOffset <= 1.0f) {
-//                        //---------------------------计算字体大小 start-------
-//                        // 当前这个不断的缩小
-//                        mTitleTextSize.add(position, mMaxTextSize - mTitleTextSizeProportion);
-//                        //当前这个不断的缩小
-//                        mTitleTextSize.add(position + 1, mMixTextSize + mTitleTextSizeProportion);
-//                        //---------------------------计算字体大小end-------
-//
-//                        //---------------------------计算间距start-------
-//                        // 获取当前标题的X坐标
-//                        // 下一个的X坐标
-//                        Integer mNextTitleX = mNowTextXs.get(position + 1);
-//                        // 计算两个坐标之间的差值
-//                        float v = (mNextTitleX - mOriginalMixTextXs.get(position + 1)) * positionOffset;
-////                        mNowTextXs.add(position + 1, (int) v);
-//                         mNowTextXs.add(position + 1, (int) (mNextTitleX - (v * positionOffset)));
-//                        //---------------------------计算间距end---------
-//
-//
-//                    }
-//                } else {
-//                    //回滚回去了，默认大标题
-//                    mTitleTextSize.add(position, mMaxTextSize);
-//                }
-//
-//                mLastPositionOffset = positionOffset;
-//
-//                //重新绘制
-//                postInvalidate();
+                mCurrentPosition = position;
+                //计算最大文字大小和最小文字大小的比例值
+                float mTitleTextSizeProportion = mTitleTextSizeCult * positionOffset;
+                //当前
+                IndicatorBean nowIndicatorBean = mIndicatorBeans.get(position);
+                // 判断ViewPager的滑动方向
+                if (mLastPositionOffset >= positionOffset && positionOffset != 0) {
+                    //右滑  这样滑动的  <<<<<-----
+                    if (position >= 0 && positionOffset <= 1.0f) {
+                        IndicatorBean nextIndicatorBean = mIndicatorBeans.get(position + 1);
+                        //---------------------------计算字体大小 start-------
+                        // 当前这个不断的缩小
+                        nowIndicatorBean.setTextSize(mMaxTextSize - mTitleTextSizeProportion);
+                        // 当前这个不断的缩小
+                        nextIndicatorBean.setTextSize(mMixTextSize + mTitleTextSizeProportion);
+                        //---------------------------计算字体大小end-------
+                        //---------------------------计算间距start-------
+                        nextIndicatorBean.calculationDrawTextX(positionOffset);
+                        //---------------------------计算间距end-------
+                    }
 
+                } else if (mLastPositionOffset <= positionOffset && positionOffset != 0) {
+                    //左滑  这样滑动的 ---->>>>
+                    //没有大于边界
+                    if (position < mViewPager.getChildCount() && positionOffset <= 1.0f) {
+                        //下一个
+                        IndicatorBean nextIndicatorBean = mIndicatorBeans.get(position + 1);
+                        //---------------------------计算字体大小 start-------
+                        // 当前这个不断的缩小
+                        nowIndicatorBean.setTextSize(mMaxTextSize - mTitleTextSizeProportion);
+                        //当前这个不断的缩小
+                        nextIndicatorBean.setTextSize(mMixTextSize + mTitleTextSizeProportion);
+                        //---------------------------计算字体大小end-------
+
+                        //---------------------------计算间距start-------
+                        //计算坐标值
+                        nextIndicatorBean.calculationDrawTextX(positionOffset);
+                        //---------------------------计算间距end---------
+                    }
+                } else {
+                    //回滚回去了，默认大标题
+                    nowIndicatorBean.setTextSize(mMaxTextSize);
+                }
+                //保存这一次偏移
+                mLastPositionOffset = positionOffset;
+                //重新绘制
+                postInvalidate();
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
 
-
             }
         });
+        mCurrentPosition = pos;
         // 设置当前页
         mViewPager.setCurrentItem(mCurrentPosition);
     }
@@ -219,29 +201,30 @@ public class ViewPagerIndicator extends View {
      */
     private void calculationProperty() {
         //清除数据
-        mTitleTextSize.clear();
+        mIndicatorBeans.clear();
         //最大文字的总长度
-        int sumTtilewidth = 0;
-        //最大文字
-        mPaint.setTextSize(mMaxTextSize);
+        int sumTitleWidth = 0;
         int titleSize = mTitles.size();
         for (int i = 0; i < titleSize; i++) {
-            sumTtilewidth += measureTextWidth(mTitles.get(i), mPaint);
-            //是否加上间隙 最后一个不加上间隙
-//            if (i < titleSize) {
-//                sumTtilewidth += mTitleSpaces;
-//            }
-            //将字体大小存放到集合中
+            //创建一个实体对象
+            IndicatorBean indicatorBean = new IndicatorBean();
+            indicatorBean.setText(mTitles.get(i));
+            //将字体大小存放到相应的对象中
             if (i == mCurrentPosition) {
-                mTitleTextSize.add(mMaxTextSize);
+                mPaint.setTextSize(mMaxTextSize);
+                indicatorBean.setTextSize(mMaxTextSize);
             } else {
-                mTitleTextSize.add(mMixTextSize);
+                mPaint.setTextSize(mMixTextSize);
+                indicatorBean.setTextSize(mMixTextSize);
             }
+            //添加到集合中
+            mIndicatorBeans.add(indicatorBean);
+            //计算字体大小
+            sumTitleWidth += measureTextWidth(mTitles.get(i), mPaint);
         }
-        Log.e(TAG, "calculationProperty: sumTtilewidth:" + sumTtilewidth + "    mWidth:" + mWidth);
         //计算初始X坐标
         //view宽度减去标题总宽度
-        mStartX = (mWidth - sumTtilewidth) / 2;
+        mStartX = (mWidth - sumTitleWidth) / 2;
         //刷新绘制
         postInvalidate();
     }
@@ -262,35 +245,111 @@ public class ViewPagerIndicator extends View {
 
         // 标题字体之间的差值
         mTitleTextSizeCult = (mMaxTextSize - mMixTextSize);
+        setFocusable(true);
+        setClickable(true);
     }
 
-    private int mSpaces = 30;
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawText2(canvas);
+        drawIndicatorText(canvas);
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mDownX = event.getX();
+                mDownY = event.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                //计算点击
+//                if (calculationClick(mDownX, mDownY, event)) {
+//                    return true;
+//                }
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+        }
+
+
+        return super.onTouchEvent(event);
     }
 
 
     /**
-     * ④ 加入ViewPager 监听偏移量
+     * 8 计算坐标点击
      *
-     * @param canvas
+     * @param downX
+     * @param downY
+     * @param event
+     * @return
      */
-    private void drawText2(Canvas canvas) {
+    private boolean calculationClick(float downX, float downY, MotionEvent event) {
+        // 抬起了手指，获取到x和y轴的点，判断是不是矩阵当中
+        // 在矩阵当中，则表示当前点击的是这个位置
+        //TODO 未完成 点击事件
+        // 1. 获取抬起的X坐标
+        int upX = (int) event.getRawX();
+        // 2. 获取抬起的Y坐标
+        int upY = (int) event.getRawY();
+
+        //xy移动未超过10个像素的矩阵
+//        if (Math.abs(downX - upX) <= 10 && Math.abs(downY - upY) <= 10) {
+        // 遍历所有的指示器
+        int size = mIndicatorBeans.size();
+        for (int i = 0; i < size; i++) {
+            //判断x坐标是否在最大宽度和最小宽度之间，就是点击中了
+            IndicatorBean indicatorBean = mIndicatorBeans.get(i);
+
+            //创建矩形
+            float right = indicatorBean.getDrawTextXs() + indicatorBean.getTextMixWidth();
+            Rect mIndicatorRect = new Rect(indicatorBean.getDrawTextXs(),
+                    0, (int) right,
+                    mHeight);
+
+            //判断点击的点是不是在矩形内
+            if (mIndicatorRect.contains(upX, upY)
+                    && i != mViewPager.getCurrentItem()) {
+                Log.e(TAG, "onTouchEvent: 在点击范围内" + i);
+
+                mViewPager.setCurrentItem(i, true);
+                return true;
+            }
+
+            Log.e(TAG, "calculationClick: \nupX:" + upX
+                    + "\nupY:" + upY + "\nmaxTextX:" + indicatorBean.getMaxTextX());
+        }
+//        }
+
+        return false;
+    }
+
+    /**
+     * ④ 加入ViewPager 监听偏移量
+     * <p>
+     * 绘制指示器文字
+     *
+     * @param canvas 画布
+     */
+    private void drawIndicatorText(Canvas canvas) {
 
         int titleSize = mTitles.size();
 
-        //
+        //遍历所有的文字，绘制
         for (int i = 0; i < titleSize; i++) {
+            IndicatorBean indicatorBean = mIndicatorBeans.get(i);
             //取出文字大小
-            Float textSize = mTitleTextSize.get(i);
-            mPaint.setTextSize(textSize);
+            mPaint.setTextSize(indicatorBean.getTextSize());
             //绘制文字
-            String title = mTitles.get(i);
+            String title = indicatorBean.getText();
             //绘制文字
-            canvas.drawText(title, mNowTextXs.get(i), mHeight - 10, mPaint);
+            Integer textX = indicatorBean.getDrawTextXs();
+            //绘制文字 应该放出一个属性叫做底部距离
+            canvas.drawText(title, textX, mHeight - mTitleSpaces, mPaint);
         }
     }
 
@@ -316,59 +375,55 @@ public class ViewPagerIndicator extends View {
         //最大字体X轴
         int maxTextX = mStartX;
 
-        mOriginalMaxTextXs.clear();
-        mOriginalMixTextXs.clear();
+        //遍历所有的文字，为标题设置相关的属性
         for (int i = 0; i < titleSize; i++) {
-            //添加到最大字体
-            mOriginalMaxTextXs.add(maxTextX);
-            //todo 应该增加一个差值
-            // 最大值 与最小值的差值
-//            if (mCurrentPosition == i) {
-//                mPaint.setTextSize(mMaxTextSize);
-//            } else {
-            mPaint.setTextSize(mMixTextSize);
-//            }
+            //去除实体类
+            IndicatorBean indicatorBean = mIndicatorBeans.get(i);
+
+            //设置相应的坐标
+            indicatorBean.setMaxTextX(maxTextX);
+            //设置 绘制时候使用的坐标
+            indicatorBean.setDrawTextXs(maxTextX);
+            //设置为最大字体
+            mPaint.setTextSize(mMaxTextSize);
             //取出文字
             String title = mTitles.get(i);
 
             //初始X坐标 加上 上个文字的宽度 加上 间距
             int maxTitleWidth = measureTextWidth(title, mPaint);
+            indicatorBean.setTextMaxWidth(maxTitleWidth);
+
             //最小X坐标值
             mPaint.setTextSize(mMixTextSize);
             int mixTitleWidth = measureTextWidth(title, mPaint);
+            indicatorBean.setTextMixWidth(mixTitleWidth);
 
             //最大标题和最小标题之间的差值
             int titleWidthDifference = maxTitleWidth - mixTitleWidth;
-            mOriginalMixTextXs.add(titleWidthDifference);
+            //将差值存放起来
+            indicatorBean.setTitleTextDifferenceX(titleWidthDifference);
 
-
-            maxTextX += maxTitleWidth + mTitleSpaces;
-            if (i > mCurrentPosition) {
-                maxTextX += titleWidthDifference;
-                Log.e(TAG, "增加: "+titleWidthDifference );
-//                mOriginalMaxTextXs.add(0, maxTextX);
+            // 根据选中 计算不同的X轴坐标
+            if (i == mCurrentPosition) {
+                maxTextX += maxTitleWidth + mTitleSpaces;
+            } else {
+                maxTextX += mixTitleWidth + mTitleSpaces;
             }
-
         }
-
-        mNowTextXs.clear();
-        mNowTextXs.addAll(mOriginalMaxTextXs);
     }
 
 
     /**
      * 测量文字的宽度
      *
-     * @param str
-     * @param paint
-     * @return
+     * @param str   需要测量的文字
+     * @param paint 画笔
+     * @return 文字的宽度
      */
     private int measureTextWidth(String str, Paint paint) {
         Rect rect = new Rect();
         paint.getTextBounds(str, 0, str.length(), rect);
-        int w = rect.width();
-
-        return w;
+        return rect.width();
         //-------------------相关工具类 end-------------------
 
     }
