@@ -1,1 +1,3 @@
 # DifferentViewPagerIndicator
+
+![ViewPagerIndicator](ViewPagerIndicator.gif)
