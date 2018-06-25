@@ -370,7 +370,7 @@ public class ViewPagerIndicator extends View {
             //绘制文字
             Integer textX = indicatorBean.getDrawTextXs();
             //绘制文字 应该放出一个属性叫做底部距离
-            canvas.drawText(title, textX, mHeight - mTitleSpaces, mPaint);
+            canvas.drawText(title, textX, mHeight - mTitleSpaces, mPaint); 
         }
     }
 
