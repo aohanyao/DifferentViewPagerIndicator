@@ -43,7 +43,7 @@ public class ViewPagerIndicator extends View {
     /**
      * 两个标题之间的
      */
-    private int mTitleSpaces = 20;
+    private int mTitleSpaces = 10;
 
     /**
      * 标题最大字体
@@ -62,11 +62,18 @@ public class ViewPagerIndicator extends View {
      */
     private int mHeight = 0;
     private int mStartX = 0;
+    /**
+     * 指示器的总长度
+     */
+    private int mSumIndicatorWidth = 0;
+    /**
+     * 当前下标
+     */
     private int mCurrentPosition = 0;
     /**
      * path构成一个三角形
      */
-    private Path mPath;
+    private Path mTrianglePath;
     private ViewPager mViewPager;
     /**
      * 最后一次偏移
@@ -87,6 +94,7 @@ public class ViewPagerIndicator extends View {
     private float mDownX = 0;
     // 2. 获取点击的Y坐标
     private float mDownY = 0;
+    private float mTriangleWidth = 0;
 
     public ViewPagerIndicator(Context context) {
         this(context, null);
@@ -247,6 +255,7 @@ public class ViewPagerIndicator extends View {
         mPaint.setAntiAlias(true);
         mMaxTextSize = DensityUtils.dp2px(getContext(), mMaxTextSize);
         mMixTextSize = DensityUtils.dp2px(getContext(), mMixTextSize);
+        mTitleSpaces = DensityUtils.dp2px(getContext(), mTitleSpaces);
 
         // 标题字体之间的差值
         mTitleTextSizeCult = (mMaxTextSize - mMixTextSize);
@@ -260,21 +269,52 @@ public class ViewPagerIndicator extends View {
      * 初始化三角形指示器
      */
     private void initTriangle() {
-        mPath = new Path();
+        mTrianglePath = new Path();
 
-        int mTriangleHeight = DensityUtils.dp2px(getContext(), 8);
-        int mTriangleWidth = DensityUtils.dp2px(getContext(), 8);
-        mPath.moveTo(0, 0);
-        mPath.lineTo(mTriangleWidth, 0);
-        mPath.lineTo(mTriangleWidth / 2, -mTriangleHeight);
-        mPath.close();
+        int mTriangleHeight = DensityUtils.dp2px(getContext(), 6);
+        mTriangleWidth = DensityUtils.dp2px(getContext(), 12);
+        //     *
+        //          *
+        //
+        mTrianglePath.moveTo(0, 0);
+        mTrianglePath.lineTo(mTriangleWidth, 0);
+        mTrianglePath.lineTo(mTriangleWidth / 2, -mTriangleHeight);
+        mTrianglePath.close();
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawIndicatorText(canvas);
+        drawIndicator(canvas);
+        if (mCurrentPosition == 0 && mLastPositionOffset == 0)
+            drawTriangle(canvas);
+    }
+
+    //绘制三角形  特例的，当前需要的
+    private void drawTriangle(Canvas canvas) {
+        //先初始化
+        int triangleX = mStartX + mIndicatorBeans.get(0).getTextMaxWidth() / 2 - mTitleSpaces / 2;
+//        //加上对应下标的宽度
+//        for (int i = 0; i <= mCurrentPosition; i++) {
+//            IndicatorBean indicatorBean = mIndicatorBeans.get(i);
+//            if (i == mCurrentPosition) {
+//                triangleX += indicatorBean.getTextMaxWidth() / 2;
+//
+//            } else {
+//                triangleX += indicatorBean.getTextMaxWidth();
+//                if (i < mIndicatorBeans.size() - 1) {
+//                    //加上间距
+//                    triangleX += mTitleSpaces;
+//                }
+//            }
+//        }
+        canvas.save();
+//        Log.e(TAG, "drawTriangle: " + triangleX);
+        canvas.translate(triangleX, mHeight - 5/*减少了一个小间距*/);
+        mPaint.setColor(Color.WHITE);
+        canvas.drawPath(mTrianglePath, mPaint);
+        canvas.restore();
     }
 
 
@@ -356,13 +396,14 @@ public class ViewPagerIndicator extends View {
      *
      * @param canvas 画布
      */
-    private void drawIndicatorText(Canvas canvas) {
+    private void drawIndicator(Canvas canvas) {
 
         int titleSize = mTitles.size();
 
         //遍历所有的文字，绘制
         for (int i = 0; i < titleSize; i++) {
             IndicatorBean indicatorBean = mIndicatorBeans.get(i);
+            mPaint.setColor(Color.WHITE);
             //取出文字大小
             mPaint.setTextSize(indicatorBean.getTextSize());
             //绘制文字
@@ -370,7 +411,10 @@ public class ViewPagerIndicator extends View {
             //绘制文字
             Integer textX = indicatorBean.getDrawTextXs();
             //绘制文字 应该放出一个属性叫做底部距离
-            canvas.drawText(title, textX, mHeight - mTitleSpaces, mPaint); 
+            canvas.drawText(title, textX, mHeight - DensityUtils.dp2px(getContext(), 14), mPaint);
+
+            //绘制消息红点
+            mPaint.setColor(Color.RED);
         }
     }
 
@@ -427,8 +471,10 @@ public class ViewPagerIndicator extends View {
             // 根据选中 计算不同的X轴坐标
             if (i == mCurrentPosition) {
                 maxTextX += maxTitleWidth + mTitleSpaces;
+                mSumIndicatorWidth += maxTitleWidth + mTitleSpaces;
             } else {
                 maxTextX += mixTitleWidth + mTitleSpaces;
+                mSumIndicatorWidth += mixTitleWidth + mTitleSpaces;
             }
         }
     }
