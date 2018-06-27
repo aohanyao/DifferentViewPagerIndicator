@@ -24,7 +24,15 @@ public class IndicatorBean {
     /**
      * 消息红点
      */
-    private int badge = 0;
+    private int mBadge = 0;
+    /**
+     * 消息红点X轴
+     */
+    private int mBadgeAxis = 0;
+    /**
+     * 消息红点半径
+     */
+    private int mBadgeRadius = 0;
     /**
      * 指示器的最大宽度
      */
@@ -119,6 +127,30 @@ public class IndicatorBean {
      */
     public void calculationDrawTextX(float positionOffset) {
         setDrawTextXs((int) (maxTextX - (titleTextDifferenceX * positionOffset)));
+    }
+
+    public int getBadge() {
+        return mBadge;
+    }
+
+    public void setBadge(int mBadge) {
+        this.mBadge = mBadge;
+    }
+
+    public int getBadgeAxis() {
+        return mBadgeAxis;
+    }
+
+    public void setBadgeAxis(int mBadgeAxis) {
+        this.mBadgeAxis = mBadgeAxis;
+    }
+
+    public int getBadgeRadius() {
+        return mBadgeRadius;
+    }
+
+    public void setBadgeRadius(int mBadgeRadius) {
+        this.mBadgeRadius = mBadgeRadius;
     }
 
     public boolean calculationClick(float x, float y) {

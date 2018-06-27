@@ -403,6 +403,7 @@ public class ViewPagerIndicator extends View {
         //遍历所有的文字，绘制
         for (int i = 0; i < titleSize; i++) {
             IndicatorBean indicatorBean = mIndicatorBeans.get(i);
+            canvas.save();
             mPaint.setColor(Color.WHITE);
             //取出文字大小
             mPaint.setTextSize(indicatorBean.getTextSize());
@@ -412,9 +413,13 @@ public class ViewPagerIndicator extends View {
             Integer textX = indicatorBean.getDrawTextXs();
             //绘制文字 应该放出一个属性叫做底部距离
             canvas.drawText(title, textX, mHeight - DensityUtils.dp2px(getContext(), 14), mPaint);
+            canvas.restore();
 
             //绘制消息红点
+            canvas.save();
             mPaint.setColor(Color.RED);
+            canvas.drawCircle(indicatorBean.getBadgeAxis(), 50, 5, mPaint);
+            canvas.restore();
         }
     }
 
@@ -476,6 +481,9 @@ public class ViewPagerIndicator extends View {
                 maxTextX += mixTitleWidth + mTitleSpaces;
                 mSumIndicatorWidth += mixTitleWidth + mTitleSpaces;
             }
+
+            //消息红点的X轴
+            indicatorBean.setBadgeAxis(maxTextX - mTitleSpaces / 3);
         }
     }
 
