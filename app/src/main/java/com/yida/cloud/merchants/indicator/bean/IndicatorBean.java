@@ -25,10 +25,8 @@ public class IndicatorBean {
      * 消息红点
      */
     private int mBadge = 0;
-    /**
-     * 消息红点X轴
-     */
-    private int mBadgeAxis = 0;
+
+
     /**
      * 消息红点半径
      */
@@ -37,10 +35,21 @@ public class IndicatorBean {
      * 指示器的最大宽度
      */
     private int textMaxWidth;
+
+
+    /**
+     * 最大宽度
+     */
+    private int textMaxHeight;
     /**
      * 指示器的最小宽度
      */
     private int textMixWidth;
+    /**
+     * 最小高度
+     */
+    private int textMixHeight;
+    private int cultBadgeRadius = 0;
     /**
      * 最小指示器的X坐标
      */
@@ -54,6 +63,14 @@ public class IndicatorBean {
      * 当前能使用的x坐标
      */
     private int drawTextXs;
+
+    public int getCultBadgeRadius() {
+        return cultBadgeRadius;
+    }
+
+    public void setCultBadgeRadius(int cultBadgeRadius) {
+        this.cultBadgeRadius = cultBadgeRadius;
+    }
 
     public String getText() {
         return text;
@@ -129,6 +146,7 @@ public class IndicatorBean {
         setDrawTextXs((int) (maxTextX - (titleTextDifferenceX * positionOffset)));
     }
 
+
     public int getBadge() {
         return mBadge;
     }
@@ -137,13 +155,6 @@ public class IndicatorBean {
         this.mBadge = mBadge;
     }
 
-    public int getBadgeAxis() {
-        return mBadgeAxis;
-    }
-
-    public void setBadgeAxis(int mBadgeAxis) {
-        this.mBadgeAxis = mBadgeAxis;
-    }
 
     public int getBadgeRadius() {
         return mBadgeRadius;
@@ -151,6 +162,23 @@ public class IndicatorBean {
 
     public void setBadgeRadius(int mBadgeRadius) {
         this.mBadgeRadius = mBadgeRadius;
+    }
+
+
+    public int getTextMaxHeight() {
+        return textMaxHeight;
+    }
+
+    public void setTextMaxHeight(int textMaxHeight) {
+        this.textMaxHeight = textMaxHeight;
+    }
+
+    public int getTextMixHeight() {
+        return textMixHeight;
+    }
+
+    public void setTextMixHeight(int textMixHeight) {
+        this.textMixHeight = textMixHeight;
     }
 
     public boolean calculationClick(float x, float y) {

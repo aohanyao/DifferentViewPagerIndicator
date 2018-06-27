@@ -43,7 +43,7 @@ public class ViewPagerIndicator extends View {
     /**
      * 两个标题之间的
      */
-    private int mTitleSpaces = 10;
+    private int mTitleSpaces = 15;
 
     /**
      * 标题最大字体
@@ -53,6 +53,15 @@ public class ViewPagerIndicator extends View {
      * 标题最小字体
      */
     private float mMixTextSize = 14L;
+    /**
+     * 最大消息红点半径差值
+     */
+    private int mCultBadgeRadius = 5;
+    /**
+     * 最小消息红点半径
+     */
+    private int mMaxBadgeRadius = 9;
+    private int mMixBadgeRadius = 4;
     /**
      * 宽度
      */
@@ -146,6 +155,9 @@ public class ViewPagerIndicator extends View {
                 mCurrentPosition = position;
                 //计算最大文字大小和最小文字大小的比例值
                 float mTitleTextSizeProportion = mTitleTextSizeCult * positionOffset;
+                //最大消息红点与最小消息红点比例值
+                float mBadgeRadiusProportion = mCultBadgeRadius * positionOffset;
+
                 //当前
                 IndicatorBean nowIndicatorBean = mIndicatorBeans.get(position);
                 // 判断ViewPager的滑动方向
@@ -156,8 +168,14 @@ public class ViewPagerIndicator extends View {
                         //---------------------------计算字体大小 start-------
                         // 当前这个不断的缩小
                         nowIndicatorBean.setTextSize(mMaxTextSize - mTitleTextSizeProportion);
+                        nowIndicatorBean.setBadgeRadius((int) (mMaxBadgeRadius - mBadgeRadiusProportion));
+                        nextIndicatorBean.setCultBadgeRadius((int) mBadgeRadiusProportion);
+
+
                         // 当前这个不断的缩小
                         nextIndicatorBean.setTextSize(mMixTextSize + mTitleTextSizeProportion);
+                        nextIndicatorBean.setBadgeRadius((int) (mMixBadgeRadius + mBadgeRadiusProportion));
+                        nextIndicatorBean.setCultBadgeRadius((int) mBadgeRadiusProportion);
                         //---------------------------计算字体大小end-------
                         //---------------------------计算间距start-------
                         nextIndicatorBean.calculationDrawTextX(positionOffset);
@@ -173,8 +191,13 @@ public class ViewPagerIndicator extends View {
                         //---------------------------计算字体大小 start-------
                         // 当前这个不断的缩小
                         nowIndicatorBean.setTextSize(mMaxTextSize - mTitleTextSizeProportion);
+                        nowIndicatorBean.setBadgeRadius((int) (mMaxBadgeRadius - mBadgeRadiusProportion));
+                        nowIndicatorBean.setCultBadgeRadius((int) mBadgeRadiusProportion);
+
                         //当前这个不断的缩小
                         nextIndicatorBean.setTextSize(mMixTextSize + mTitleTextSizeProportion);
+                        nextIndicatorBean.setBadgeRadius((int) (mMixBadgeRadius + mBadgeRadiusProportion));
+                        nextIndicatorBean.setCultBadgeRadius((int) mBadgeRadiusProportion);
                         //---------------------------计算字体大小end-------
 
                         //---------------------------计算间距start-------
@@ -185,6 +208,7 @@ public class ViewPagerIndicator extends View {
                 } else {
                     //回滚回去了，默认大标题
                     nowIndicatorBean.setTextSize(mMaxTextSize);
+                    nowIndicatorBean.setBadgeRadius(mMaxBadgeRadius);
                 }
                 //保存这一次偏移
                 mLastPositionOffset = positionOffset;
@@ -256,6 +280,9 @@ public class ViewPagerIndicator extends View {
         mMaxTextSize = DensityUtils.dp2px(getContext(), mMaxTextSize);
         mMixTextSize = DensityUtils.dp2px(getContext(), mMixTextSize);
         mTitleSpaces = DensityUtils.dp2px(getContext(), mTitleSpaces);
+        mCultBadgeRadius = DensityUtils.dp2px(getContext(), mCultBadgeRadius);
+        mMaxBadgeRadius = DensityUtils.dp2px(getContext(), mMaxBadgeRadius);
+        mMixBadgeRadius = DensityUtils.dp2px(getContext(), mMixBadgeRadius);
 
         // 标题字体之间的差值
         mTitleTextSizeCult = (mMaxTextSize - mMixTextSize);
@@ -273,9 +300,7 @@ public class ViewPagerIndicator extends View {
 
         int mTriangleHeight = DensityUtils.dp2px(getContext(), 6);
         mTriangleWidth = DensityUtils.dp2px(getContext(), 12);
-        //     *
-        //          *
-        //
+
         mTrianglePath.moveTo(0, 0);
         mTrianglePath.lineTo(mTriangleWidth, 0);
         mTrianglePath.lineTo(mTriangleWidth / 2, -mTriangleHeight);
@@ -412,13 +437,18 @@ public class ViewPagerIndicator extends View {
             //绘制文字
             Integer textX = indicatorBean.getDrawTextXs();
             //绘制文字 应该放出一个属性叫做底部距离
-            canvas.drawText(title, textX, mHeight - DensityUtils.dp2px(getContext(), 14), mPaint);
+            int mBottomMargin = DensityUtils.dp2px(getContext(), 14);
+            canvas.drawText(title, textX, mHeight - mBottomMargin, mPaint);
             canvas.restore();
 
             //绘制消息红点
             canvas.save();
             mPaint.setColor(Color.RED);
-            canvas.drawCircle(indicatorBean.getBadgeAxis(), 50, 5, mPaint);
+            canvas.drawCircle(textX + measureTextWidth(title, mPaint),
+                    mHeight - mBottomMargin - indicatorBean.getTextMixHeight() + indicatorBean.getCultBadgeRadius(),
+                    //TODO 高度减去 底部 减去文字的高度
+                    indicatorBean.getBadgeRadius()
+                    , mPaint);
             canvas.restore();
         }
     }
@@ -462,11 +492,16 @@ public class ViewPagerIndicator extends View {
             //初始X坐标 加上 上个文字的宽度 加上 间距
             int maxTitleWidth = measureTextWidth(title, mPaint);
             indicatorBean.setTextMaxWidth(maxTitleWidth);
+            //最大高度
+            indicatorBean.setTextMaxHeight(measureTextHeight(title, mPaint));
 
             //最小X坐标值
             mPaint.setTextSize(mMixTextSize);
             int mixTitleWidth = measureTextWidth(title, mPaint);
             indicatorBean.setTextMixWidth(mixTitleWidth);
+            //最小高度
+            indicatorBean.setTextMixHeight(measureTextHeight(title, mPaint));
+
 
             //最大标题和最小标题之间的差值
             int titleWidthDifference = maxTitleWidth - mixTitleWidth;
@@ -475,15 +510,26 @@ public class ViewPagerIndicator extends View {
 
             // 根据选中 计算不同的X轴坐标
             if (i == mCurrentPosition) {
+
+                //消息红点的坐标轴
+                //当前文字的X轴坐标+当前文字的宽度
+//                indicatorBean.setBadgeAxis(maxTextX + maxTitleWidth/*红点间距*/);
+                //最大文字的X轴坐标
                 maxTextX += maxTitleWidth + mTitleSpaces;
+                //指示器总长度
                 mSumIndicatorWidth += maxTitleWidth + mTitleSpaces;
+                indicatorBean.setBadgeRadius(mMaxBadgeRadius);
+
             } else {
                 maxTextX += mixTitleWidth + mTitleSpaces;
                 mSumIndicatorWidth += mixTitleWidth + mTitleSpaces;
+                indicatorBean.setBadgeRadius(mMixBadgeRadius);
             }
+//            indicatorBean.setBadgeAxis(maxTextX + mixTitleWidth + 5/*红点间距*/);
+
 
             //消息红点的X轴
-            indicatorBean.setBadgeAxis(maxTextX - mTitleSpaces / 3);
+
         }
     }
 
@@ -499,7 +545,19 @@ public class ViewPagerIndicator extends View {
         Rect rect = new Rect();
         paint.getTextBounds(str, 0, str.length(), rect);
         return rect.width();
-        //-------------------相关工具类 end-------------------
-
     }
+
+    /**
+     * 测量文字的高度
+     *
+     * @param str   需要测量的文字
+     * @param paint 画笔
+     * @return 文字的宽度
+     */
+    private int measureTextHeight(String str, Paint paint) {
+        Rect rect = new Rect();
+        paint.getTextBounds(str, 0, str.length(), rect);
+        return rect.height();
+    }
+    //-------------------相关工具类 end-------------------
 }
