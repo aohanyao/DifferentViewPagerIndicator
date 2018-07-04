@@ -29,7 +29,7 @@ import java.util.List;
  * x坐标
  */
 
-public class ViewPagerIndicator extends View {
+public class DifferentViewPagerIndicator extends View {
 
     private String TAG = "ViewPagerIndicator";
 
@@ -105,15 +105,15 @@ public class ViewPagerIndicator extends View {
     private float mDownY = 0;
     private float mTriangleWidth = 0;
 
-    public ViewPagerIndicator(Context context) {
+    public DifferentViewPagerIndicator(Context context) {
         this(context, null);
     }
 
-    public ViewPagerIndicator(Context context, @Nullable AttributeSet attrs) {
+    public DifferentViewPagerIndicator(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ViewPagerIndicator(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public DifferentViewPagerIndicator(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs, defStyleAttr);
     }
@@ -351,13 +351,13 @@ public class ViewPagerIndicator extends View {
                 mDownX = event.getX();
                 mDownY = event.getY();
                 break;
-            case MotionEvent.ACTION_MOVE:
-                //计算点击
-//                if (calculationClick(mDownX, mDownY, event)) {
-//                    return true;
-//                }
-                break;
             case MotionEvent.ACTION_UP:
+                //计算点击
+                if (calculationClick(mDownX, mDownY, event)) {
+                    return true;
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
                 break;
         }
 
@@ -379,9 +379,9 @@ public class ViewPagerIndicator extends View {
         // 在矩阵当中，则表示当前点击的是这个位置
         //TODO 未完成 点击事件
         // 1. 获取抬起的X坐标
-        int upX = (int) event.getRawX();
+        int upX = (int) event.getX();
         // 2. 获取抬起的Y坐标
-        int upY = (int) event.getRawY();
+        int upY = (int) event.getY();
 
         //xy移动未超过10个像素的矩阵
 //        if (Math.abs(downX - upX) <= 10 && Math.abs(downY - upY) <= 10) {
@@ -406,8 +406,8 @@ public class ViewPagerIndicator extends View {
                 return true;
             }
 
-            Log.e(TAG, "calculationClick: \nupX:" + upX
-                    + "\nupY:" + upY + "\nmaxTextX:" + indicatorBean.getMaxTextX());
+//            Log.e(TAG, "calculationClick: \nupX:" + upX
+//                    + "\nupY:" + upY + "\nmaxTextX:" + indicatorBean.getMaxTextX());
         }
 //        }
 
@@ -444,11 +444,11 @@ public class ViewPagerIndicator extends View {
             //绘制消息红点
             canvas.save();
             mPaint.setColor(Color.RED);
-            canvas.drawCircle(textX + measureTextWidth(title, mPaint),
-                    mHeight - mBottomMargin - indicatorBean.getTextMixHeight() + indicatorBean.getCultBadgeRadius(),
-                    //TODO 高度减去 底部 减去文字的高度
-                    indicatorBean.getBadgeRadius()
-                    , mPaint);
+//            canvas.drawCircle(textX + measureTextWidth(title, mPaint),
+//                    mHeight - mBottomMargin - indicatorBean.getTextMixHeight() + indicatorBean.getCultBadgeRadius(),
+//                    //TODO 高度减去 底部 减去文字的高度
+//                    indicatorBean.getBadgeRadius()
+//                    , mPaint);
             canvas.restore();
         }
     }

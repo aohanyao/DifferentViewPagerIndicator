@@ -1,8 +1,6 @@
 package com.yida.cloud.merchants
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -21,11 +19,7 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        val fab = findViewById<View>(R.id.fab) as FloatingActionButton
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
+
         initPager()
     }
 
@@ -39,10 +33,10 @@ class MainActivity : AppCompatActivity() {
         vpHome?.apply {
             val mTitle = arrayOf("待办", "任务", "消息")
             adapter = BaseFragmentPagerAdapter(supportFragmentManager, mFragments, mTitle)
-//            tlHome?.setTabItemTitles(arrayListOf("待办", "任务", "消息"))
-            vi1?.setTitles(arrayListOf("待办", "任务", "消息"))
+            vi1?.titles = arrayListOf("待办", "任务", "消息")
             vi1?.setViewPager(this, 0)
-//            tlHome?.setViewPager(this, 0)
+            offscreenPageLimit = mFragments.size * 2
+            pageMargin = 40
         }
 
 

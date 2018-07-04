@@ -6,34 +6,25 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     android:orientation="vertical"
+    android:clipChildren="false"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.yida.cloud.merchants.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <com.yida.cloud.merchants.indicator.ViewPagerIndicator
+    <com.yida.cloud.merchants.indicator.DifferentViewPagerIndicator
         android:id="@+id/vi1"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:background="#03a5fa" />
+        android:background="@color/colorPrimary" />
 
-    <com.yida.cloud.merchants.DifferentViewPagerIndicator
-        android:id="@+id/tlHome"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/colorPrimary"
-        android:visibility="gone"
-        app:tabIndicatorCount="3"
-        app:tabIndicatorHeight="2.5dp"
-        app:tabIndicatorTextSize="16sp"
-        app:tabSelectedTextColor="@color/colorPrimary"
-        app:tabTextColor="#fff" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/vpHome"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:clipChildren="false"
         android:layout_weight="1"
         android:background="#fff" />
 
